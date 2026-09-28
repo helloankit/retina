@@ -62,8 +62,35 @@ button.link {
 }
 button.link:hover { text-decoration-color: currentColor; }
 
+.empty-glow {
+  position: fixed;
+  z-index: 0;
+  right: -30vw;
+  bottom: -30vh;
+  left: -30vw;
+  height: 64vh;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    105deg,
+    rgb(29 28 26 / 0%) 7%,
+    rgb(91 68 99 / 34%) 34%,
+    rgb(116 87 52 / 28%) 51%,
+    rgb(49 83 88 / 31%) 69%,
+    rgb(29 28 26 / 0%) 94%
+  );
+  background-size: 180% 100%;
+  background-position: 0% 50%;
+  filter: blur(52px);
+  -webkit-mask-image: linear-gradient(to top, #000 15%, rgb(0 0 0 / 72%) 54%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 15%, rgb(0 0 0 / 72%) 54%, transparent 100%);
+  transform: translate3d(0, 0, 0) scale(1.1);
+  transition: opacity 600ms ease;
+}
+
 .empty {
   position: fixed;
+  z-index: 1;
   inset: 0;
   display: flex;
   flex-direction: column;
@@ -88,6 +115,20 @@ button.link:hover { text-decoration-color: currentColor; }
 
 body[data-state="reading"] .empty { display: none; }
 body[data-state="empty"]   .clear { display: none; }
+body[data-state="empty"] .empty-glow {
+  opacity: 1;
+  animation: empty-glow-drift 24s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+body[data-state="reading"] .empty-glow { animation: none; }
+
+@keyframes empty-glow-drift {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-glow { animation: none !important; }
+}
 
 /* ---------- Reading surface ---------- */
 
