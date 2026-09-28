@@ -97,11 +97,12 @@ button.link:hover { text-decoration-color: currentColor; }
   justify-content: center;
   align-items: center;
   text-align: center;
-  color: var(--muted);
+  color: var(--text-soft);
   padding: 1.5rem;
 }
 .empty p { margin: 0.35em 0; }
-.empty .hint { font-size: 0.8em; }
+.empty p:first-child { color: var(--text); }
+.empty .hint { color: #97948d; font-size: 0.8em; }
 .empty kbd { font: inherit; }
 
 .clear {
