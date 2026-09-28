@@ -22,6 +22,7 @@
   const undoHistory = [];
   const MAX_UNDO = 20;
   let currentSource = null;
+  let exitTimer = 0;
 
   /* ======================================================================
      Plain text → HTML. Understands the everyday subset of Markdown and
@@ -491,8 +492,33 @@
   }
 
   function show(frag) {
+    clearTimeout(exitTimer);
+    reader.classList.remove('reader--leave', 'reader--enter');
     reader.replaceChildren(frag);
     body.dataset.state = 'reading';
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Restart the short entrance animation when one document replaces another.
+      void reader.offsetWidth;
+      reader.classList.add('reader--enter');
+      reader.addEventListener('animationend', () => reader.classList.remove('reader--enter'), { once: true });
+    }
+  }
+
+  function emptyReader() {
+    const finish = () => {
+      reader.classList.remove('reader--leave');
+      reader.replaceChildren();
+      body.dataset.state = 'empty';
+    };
+    clearTimeout(exitTimer);
+    if (!reader.childNodes.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finish();
+      return;
+    }
+    reader.classList.remove('reader--enter');
+    void reader.offsetWidth;
+    reader.classList.add('reader--leave');
+    exitTimer = window.setTimeout(finish, 160);
   }
 
   function snapshot(source) {
@@ -526,9 +552,8 @@
 
   function clear() {
     if (body.dataset.state === 'reading') pushUndo();
-    reader.replaceChildren();
-    body.dataset.state = 'empty';
     currentSource = null;
+    emptyReader();
     window.scrollTo(0, 0);
     saveCurrent();
   }
@@ -542,8 +567,7 @@
       else currentSource = null;
     }
     if (!currentSource) {
-      reader.replaceChildren();
-      body.dataset.state = 'empty';
+      emptyReader();
     }
     window.scrollTo(0, 0);
     saveCurrent();
