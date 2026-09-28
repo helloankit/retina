@@ -1,0 +1,191 @@
+/* Retina — a quiet surface for reading pasted text. Dark-first. */
+
+:root {
+  color-scheme: dark;
+
+  /* Warm near-black instead of pure black; warm off-white instead of pure white.
+     Body text sits at roughly 11:1 contrast — high enough to be crisp,
+     low enough that it doesn't glare. */
+  --bg: #1d1c1a;
+  --text: #d3d0c8;
+  --text-strong: #ebe8e0;
+  --text-soft: #b8b5ad;
+  --muted: #77746e;
+  --rule: #34322e;
+  --code-bg: #262522;
+  --selection: #3d3b36;
+
+  --serif: "Iowan Old Style", Charter, Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* ~65–70 characters per line at the body size. */
+  --measure: 34em;
+}
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 1.25rem;          /* 20px */
+  line-height: 1.6;
+  letter-spacing: 0.003em;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 720px)  { body { font-size: 1.125rem; } }  /* 18px */
+@media (min-width: 1800px) { body { font-size: 1.375rem; } }  /* 22px: big monitors sit farther away */
+
+::selection { background: var(--selection); }
+
+:focus-visible { outline: 1px solid var(--muted); outline-offset: 4px; }
+
+/* ---------- Chrome (there is almost none) ---------- */
+
+button.link {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--muted);
+}
+button.link:hover { text-decoration-color: currentColor; }
+
+.empty {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: var(--muted);
+  padding: 1.5rem;
+}
+.empty p { margin: 0.35em 0; }
+.empty .hint { font-size: 0.8em; }
+.empty kbd { font: inherit; }
+
+.clear {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.clear:hover { color: var(--text-soft); }
+
+body[data-state="reading"] .empty { display: none; }
+body[data-state="empty"]   .clear { display: none; }
+
+/* ---------- Reading surface ---------- */
+
+.reader {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: clamp(4rem, 12vh, 8rem) 1.5rem 40vh;   /* generous top; deep bottom so the last lines can scroll up into a comfortable spot */
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  hanging-punctuation: first last;
+}
+
+/* Let the browser skip layout for offscreen blocks; keeps very long documents smooth. */
+.reader > * {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 3rem;
+}
+
+.reader > :first-child { margin-top: 0; }
+
+.reader p { margin: 0 0 1.15em; }
+
+/* Headings: differentiated by size, spacing and a slightly brighter tone — not by weight. */
+.reader h1, .reader h2, .reader h3, .reader h4 {
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--text-strong);
+  letter-spacing: -0.005em;
+  margin: 2.1em 0 0.65em;
+  text-wrap: balance;
+}
+.reader h1 { font-size: 1.55em; }
+.reader h2 { font-size: 1.3em; }
+.reader h3 { font-size: 1.1em; font-weight: 700; }
+.reader h4 { font-size: 1em;   font-weight: 700; color: var(--text); }
+.reader h1 strong, .reader h2 strong, .reader h3 strong, .reader h4 strong { font-weight: inherit; }
+.reader h1 + h2, .reader h2 + h3, .reader h3 + h4 { margin-top: 0.8em; }
+
+/* Bold nudges brighter rather than heavier-looking; italic stays plain. */
+.reader strong { font-weight: 700; color: var(--text-strong); }
+.reader em { font-style: italic; }
+.reader u {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+/* Links keep the text colour; only a quiet underline gives them away. */
+.reader a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--muted);
+}
+.reader a:hover { text-decoration-color: var(--text-soft); }
+
+.reader code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: var(--code-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.reader pre {
+  font-family: var(--mono);
+  font-size: 0.8em;
+  line-height: 1.55;
+  background: var(--code-bg);
+  padding: 1em 1.2em;
+  border-radius: 6px;
+  margin: 1.4em 0;
+  overflow-x: auto;
+  tab-size: 4;
+  white-space: pre;
+}
+.reader pre code { font-size: inherit; background: none; padding: 0; border-radius: 0; }
+
+.reader blockquote {
+  margin: 1.4em 0;
+  padding: 0 0 0 1.1em;
+  border-left: 2px solid var(--rule);
+  color: var(--text-soft);
+}
+.reader blockquote > :last-child { margin-bottom: 0; }
+
+.reader ul, .reader ol { margin: 0 0 1.15em; padding-left: 1.6em; }
+.reader li { margin: 0.35em 0; }
+.reader li::marker { color: var(--muted); }
+.reader li > ul, .reader li > ol { margin: 0.3em 0 0; }
+.reader li > p { margin: 0 0 0.5em; }
+.reader li > p:last-child { margin-bottom: 0; }
+
+.reader hr {
+  border: 0;
+  height: 1px;
+  width: 6em;
+  margin: 2.6em auto;
+  background: var(--rule);
+}

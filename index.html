@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#1d1c1a">
+  <title>Retina</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-state="empty">
+
+  <div class="empty" id="empty">
+    <p>Paste text to read.</p>
+    <p class="hint" id="hint"><kbd id="key">⌘V</kbd> &nbsp;or&nbsp; <button class="link" id="paste" type="button">paste from clipboard</button></p>
+  </div>
+
+  <button class="link clear" id="clear" type="button">Clear</button>
+
+  <main class="reader" id="reader"></main>
+
+  <script src="app.js"></script>
+</body>
+</html>
