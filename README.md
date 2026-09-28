@@ -17,6 +17,7 @@ then visit http://localhost:8000.
 - Press ⌘V (Ctrl+V) anywhere on the page, or click "paste from clipboard". Dropping a text file onto the page also works.
 - Rich text from web pages, Google Docs, Word, chat apps and code editors keeps its headings, emphasis, links, code, lists and quotes. Plain text is read as light Markdown.
 - "Clear" in the top right starts over. Pasting again replaces what's there.
+- Press ⌘Z (Ctrl+Z on Windows/Linux) to restore a document removed by Clear or replaced by a paste.
 - The last document and scroll position survive a reload.
 - Text too small or too large? Use the browser's zoom. Everything scales with it.
 

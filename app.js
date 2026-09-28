@@ -16,6 +16,13 @@
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
   keyEl.textContent = isMac ? '⌘V' : 'Ctrl+V';
 
+  // The reader has no editable surface, so browser undo cannot restore a
+  // document that was replaced by a paste or removed by Clear. Keep a small
+  // in-memory history of those whole-document changes instead.
+  const undoHistory = [];
+  const MAX_UNDO = 20;
+  let currentSource = null;
+
   /* ======================================================================
      Plain text → HTML. Understands the everyday subset of Markdown and
      degrades gracefully for text that isn't Markdown at all.
@@ -488,22 +495,59 @@
     body.dataset.state = 'reading';
   }
 
+  function snapshot(source) {
+    return source ? { html: source.html || '', text: source.text || '' } : null;
+  }
+
+  function pushUndo() {
+    undoHistory.push(snapshot(currentSource));
+    if (undoHistory.length > MAX_UNDO) undoHistory.shift();
+  }
+
+  function saveCurrent() {
+    if (currentSource) remember(currentSource);
+    else {
+      try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SCROLL_KEY); } catch (e) { /* ignore */ }
+    }
+  }
+
   function load(source, restoring) {
     const frag = build(source.html, source.text);
     if (!frag) return false;
+    if (!restoring) pushUndo();
     show(frag);
+    currentSource = snapshot(source);
     if (!restoring) {
       window.scrollTo(0, 0);
-      remember(source);
+      saveCurrent();
     }
     return true;
   }
 
   function clear() {
+    if (body.dataset.state === 'reading') pushUndo();
     reader.replaceChildren();
     body.dataset.state = 'empty';
+    currentSource = null;
     window.scrollTo(0, 0);
-    try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SCROLL_KEY); } catch (e) { /* ignore */ }
+    saveCurrent();
+  }
+
+  function undo() {
+    if (!undoHistory.length) return false;
+    currentSource = undoHistory.pop();
+    if (currentSource) {
+      const frag = build(currentSource.html, currentSource.text);
+      if (frag) show(frag);
+      else currentSource = null;
+    }
+    if (!currentSource) {
+      reader.replaceChildren();
+      body.dataset.state = 'empty';
+    }
+    window.scrollTo(0, 0);
+    saveCurrent();
+    return true;
   }
 
   function remember(source) {
@@ -535,6 +579,12 @@
     if (!html && !text.trim()) return;
     e.preventDefault();
     load({ html, text });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'z' && undo()) {
+      e.preventDefault();
+    }
   });
 
   document.addEventListener('dragover', (e) => { e.preventDefault(); });
@@ -584,5 +634,5 @@
   restore();
 
   // Exposed for tests only.
-  window.__retina = { textToHtml, build, load, clear };
+  window.__retina = { textToHtml, build, load, clear, undo };
 })();
